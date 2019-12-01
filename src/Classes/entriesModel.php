@@ -1,10 +1,6 @@
 <?php
-
 namespace Blog\Model;
-//include ('db_connection.php');
-//
 require "../../vendor/autoload.php";
-use Blog\Model;
 class entriesModel {
     
     //create the read blog entry
@@ -13,8 +9,21 @@ class entriesModel {
         var_dump($db->db());
     }
     //create the add blog entry
+    
+   
+    public function addBlog(){
+
+    }
+
     //create the edit blog entry
+    public function editBlog(){
+
+    }
+
     //create the delete blog entry
+    public function deleteBlog(){
+
+    }
     
 }
 
