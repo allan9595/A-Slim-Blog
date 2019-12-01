@@ -17,5 +17,10 @@
         "slim/php-view": "^2.0",
         "monolog/monolog": "^1.17",
         "twig/twig": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "Blog\\": "src/classes/"
+        }
     }
 }
