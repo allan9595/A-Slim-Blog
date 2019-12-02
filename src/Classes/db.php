@@ -1,11 +1,12 @@
 <?php
 namespace Blog\Model;
 use PDO;
+//echo dirname(__DIR__);
 class db {
     public function db(){
         try{
             //connect to the db
-            $db = new PDO("sqlite:".dirname(__DIR__)."/classes/blog.db");
+            $db = new PDO("sqlite:".dirname(__DIR__)."/Classes/blog.db");
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             return $db;
         }catch(Exception $e){
@@ -14,4 +15,7 @@ class db {
         }
     }
 }
+
+// $test = new db();
+// $test->db();
 ?>

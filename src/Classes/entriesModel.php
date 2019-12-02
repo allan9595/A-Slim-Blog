@@ -1,19 +1,23 @@
 <?php
 namespace Blog\Model;
-require "../../vendor/autoload.php";
-//use PDO;
+require __DIR__ . "/../../vendor/autoload.php";
+//echo __DIR__;
+
+use Blog\Model\db;
+use \DateTime;
+use \DateTimeZone;
 
 class entriesModel {
     protected $db;
     public function __construct(){
         $this->db = new db();
     }
-    //create the read blog entry
+    //get blogs entries
     public function getBlog(){
-        //var_dump($db->db());
+        // var_dump($this->db->db());
         try{
             $sql = "
-                select id, title, date from posts
+                SELECT id, title, date FROM posts ORDER BY date DESC
             ";
             $pdo = $this->db->db()->prepare($sql);
             $pdo->execute();
@@ -22,28 +26,50 @@ class entriesModel {
         }catch(Exception $e){
             echo $e->getMessage();
         }
+    }
 
+      //get blog by title
+      public function getBlogByTitle($title){
+        $title = filter_var($title, FILTER_SANITIZE_STRING);
+        try{
+            $sql = "
+                SELECT id, title, date FROM posts ORDER BY date DESC WHERE title = 'title'
+            ";
+            $pdo = $this->db->db()->prepare($sql);
+            $pdo->bindValue(1, $title, \PDO::PARAM_STR);
+            $pdo->execute();
+            $results = $pdo->fetchAll(\PDO::FETCH_ASSOC);
+            return $results;
+        }catch(Exception $e){
+            echo $e->getMessage();
+        }
     }
 
     //create the add blog entry
-    public function addBlog(){
+    public function addBlog($data){
 
         //filter the post data 
-        $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_STRING);
-        $body = filter_input(INPUT_post, 'body', FILTER_SANITIZE_STRING);
-        $date = date_format(new DateTime(), 'Y-m-d H:i:s'); // get the current date/time when the blog create
+        $title = filter_var($data["title"], FILTER_SANITIZE_STRING);
+        $body = filter_var($data["entry"], FILTER_SANITIZE_STRING);
+        $date = date_format(new DateTime('NOW', new DateTimeZone('EST')), 'Y-m-d H:i:s'); // get the current date/time when the blog create
 
+        //insert new data into the db
         $sql = "
-            insert into posts (title, date, body) value (?, ?, ?)
+            INSERT INTO posts (title, date, body, slug) VALUES (?, ?, ?, NULL);
         ";
 
         $pdo = $this->db->db()->prepare($sql);
         $pdo->bindValue(1, $title, \PDO::PARAM_STR);
         $pdo->bindValue(2, $date, \PDO::PARAM_STR);
         $pdo->bindValue(3, $body, \PDO::PARAM_STR);
-
         $pdo->execute();
 
+        //create the slug for the record just created
+        $sql = "
+            UPDATE posts SET slug = (SELECT lower(replace(title,' ','-')) From posts WHERE id = last_insert_rowid()) || '-' || last_insert_rowid() WHERE id = last_insert_rowid();
+        ";
+        $pdo = $this->db->db()->prepare($sql);
+        $pdo->execute();
     }
 
     //create the edit blog entry
@@ -58,6 +84,11 @@ class entriesModel {
     
 }
 
-$test = new entriesModel();
-$test->getBlog();
+// $test = new entriesModel();
+// $test->getBlog();
+
+//php query
+// INSERT INTO posts (title, date, body, slug) VALUES ('PHP is awesome', datetime(), 'I love php', NULL);
+// UPDATE posts SET slug = (SELECT lower(replace(title,' ','-')) From posts WHERE id = last_insert_rowid()) || '-' || last_insert_rowid() WHERE id = last_insert_rowid();
 ?>
+

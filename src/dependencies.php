@@ -6,7 +6,12 @@ $container = $app->getContainer();
 // view renderer
 $container['renderer'] = function ($c) {
     $settings = $c->get('settings')['renderer'];
-    return new Slim\Views\PhpRenderer($settings['template_path']);
+    
+    $renderer = new Slim\Views\Twig($settings['template_path']);
+    $router = $c->get('router');
+    $uri = \Slim\Http\Uri::createFromEnvironment(new \Slim\Http\Environment($_SERVER));
+    $renderer->addExtension(new \Slim\Views\TwigExtension($router, $uri));
+    return $renderer;
 };
 
 // monolog
