@@ -1,13 +1,12 @@
 <?php
 namespace Blog\Model;
 require __DIR__ . "/../../vendor/autoload.php";
-//echo __DIR__;
 
 use Blog\Model\db;
 use \DateTime;
 use \DateTimeZone;
 
-class entriesModel {
+class entriesModel{
     protected $db;
     public function __construct(){
         $this->db = new db();
@@ -48,30 +47,85 @@ class entriesModel {
     //create the add blog entry
     public function addBlog($data){
 
-        //filter the post data 
-        $title = filter_var($data["title"], FILTER_SANITIZE_STRING);
-        $body = filter_var($data["entry"], FILTER_SANITIZE_STRING);
-        $date = date_format(new DateTime('NOW', new DateTimeZone('EST')), 'Y-m-d H:i:s'); // get the current date/time when the blog create
+        try{
+            $db = $this->db->db();
+            //filter the post data 
+            $title = filter_var($data["title"], FILTER_SANITIZE_STRING);
+            $body = filter_var($data["entry"], FILTER_SANITIZE_STRING);
+            $date = date_format(new DateTime('NOW', new DateTimeZone('EST')), 'Y-m-d H:i:s'); // get the current date/time when the blog create
 
-        //insert new data into the db
-        $sql = "
-            INSERT INTO posts (title, date, body, slug) VALUES (?, ?, ?, NULL);
-        ";
+            //insert new data into the db
+            $sql = "
+                INSERT INTO posts (title, date, body, slug) VALUES (?, ?, ?, NULL)
+            ";
 
-        $pdo = $this->db->db()->prepare($sql);
-        $pdo->bindValue(1, $title, \PDO::PARAM_STR);
-        $pdo->bindValue(2, $date, \PDO::PARAM_STR);
-        $pdo->bindValue(3, $body, \PDO::PARAM_STR);
-        $pdo->execute();
+            $pdo = $db->prepare($sql);
+            $pdo->bindValue(1, $title, \PDO::PARAM_STR);
+            $pdo->bindValue(2, $date, \PDO::PARAM_STR);
+            $pdo->bindValue(3, $body, \PDO::PARAM_STR);
+            $pdo->execute();
 
-        //create the slug for the record just created
-        $sql = "
-            UPDATE posts SET slug = (SELECT lower(replace(title,' ','-')) From posts WHERE id = last_insert_rowid()) || '-' || last_insert_rowid() WHERE id = last_insert_rowid();
-        ";
-        $pdo = $this->db->db()->prepare($sql);
-        $pdo->execute();
+            // $sql = "
+            //     SELECT last_insert_rowid();
+            // ";
+            // $pdo = $db->prepare($sql);
+            // $pdo->execute();
+            // $results = $pdo->fetchAll(\PDO::FETCH_ASSOC);
+            // var_dump($results);
+            // create the slug for the record just created
+            $sql = "
+                UPDATE posts
+                SET slug = (
+                        SELECT [REPLACE]( (
+                                            SELECT LOWER( (
+                                                                SELECT title
+                                                                FROM posts
+                                                                WHERE id = (
+                                                                                SELECT last_insert_rowid() 
+                                                                            )
+                                                            )
+                                                    ) 
+                                        ), ' ', '-') || '-' || (
+                                                                    SELECT last_insert_rowid() 
+                                                                )
+                    )
+            WHERE id = (
+                            SELECT last_insert_rowid() 
+                        )
+         
+            ";
+            $pdo = $db->prepare($sql);
+            $pdo->execute();
+        }catch(Exception $e){
+            echo $e->getMessage();
+        }
     }
 
+    // public function createSlug(){
+    //     $sql = "
+    //         UPDATE posts
+    //         SET slug = (
+    //                 SELECT [REPLACE]( (
+    //                                     SELECT LOWER( (
+    //                                                         SELECT title
+    //                                                         FROM posts
+    //                                                         WHERE id = (
+    //                                                                         SELECT last_insert_rowid() 
+    //                                                                     )
+    //                                                     )
+    //                                             ) 
+    //                                 ), ' ', '-') || '-' || (
+    //                                                             SELECT last_insert_rowid() 
+    //                                                         )
+    //             )
+    //     WHERE id = (
+    //                     SELECT last_insert_rowid() 
+    //                 );
+    
+    //     ";
+    //     $pdo = $this->db->db()->prepare($sql);
+    //     $pdo->execute();
+    // }
     //create the edit blog entry
     public function editBlog(){
 

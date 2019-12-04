@@ -37,6 +37,7 @@ $app->post('/new', function ($request, $response, $args) {
     //init the db object
     $db = new entriesModel();
     $db->addBlog($data);
+    //$db->createSlug();
 
     //redirect back to index page 
     return $response->withRedirect('/', 301);
