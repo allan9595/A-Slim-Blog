@@ -13,7 +13,7 @@
         <header>
             <div class="container">
                 <div class="site-header">
-                    <a class="logo" href="index.html">SparkBlog</a>
+                    <a class="logo" href="{{ path_for('/') }}">SparkBlog</a>
                     <a class="new-entry button button-round" href="{{ path_for('new') }}"><i class="material-icons">create</i></a>
                 </div>
             </div>
@@ -23,8 +23,8 @@
                 <div class="entry-list">
                     {% for post in posts %}
                         <article>
-                            <h2><a href="">{{ post.title|e }}</a></h2>
-                            <time datetime=post.date>{{ post.date|e }}</time>
+                            <h2><a href={{ post.slug }}>{{ post.title|e }}</a></h2>
+                            <time datetime=post.date>{{ post.date|e }} {{'EST'}}</time>
                         </article>
                     {% endfor %}
                 </div>

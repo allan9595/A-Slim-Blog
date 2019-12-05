@@ -28,15 +28,15 @@
                         <label for="entry">Entry</label>
                         <textarea rows="5" name="entry"></textarea>
                         <input type="submit" value="Publish Entry" class="button">
-                        <a href="#" class="button button-secondary">Cancel</a>
+                        <a href="{{ path_for('/') }}" class="button button-secondary">Cancel</a>
                     </form>
                 </div>
             </div>
         </section>
         <footer>
             <div>
-                <a href="#">Contact Us</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-                <a href="#">Terms</a>
+                <a href="{{ path_for('/') }}">Contact Us</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+                <a href="{{ path_for('/') }}">Terms</a>
             </div>
         </footer>
     </body>

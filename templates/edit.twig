@@ -6,15 +6,15 @@
         <title>SparkBlog</title>
         <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,400italic,700|Noto+Sans:700,400' rel='stylesheet' type='text/css'>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/site.css">
+        <link rel="stylesheet" href="../css/normalize.css">
+        <link rel="stylesheet" href="../css/site.css" version=51>
     </head>
     <body>
         <header>
             <div class="container">
                 <div class="site-header">
-                    <a class="logo" href="index.html">SparkBlog</a>
-                    <a class="new-entry button button-round" href="new.html"><i class="material-icons">create</i></a>
+                    <a class="logo" href="{{ path_for('/') }}">SparkBlog</a>
+                    <a class="new-entry button button-round" href="{{ path_for('new') }}"><i class="material-icons">create</i></a>
                 </div>
             </div>
         </header>
@@ -22,13 +22,13 @@
             <div class="container">
                 <div class="edit-entry">
                     <h2>Edit Entry</h2>
-                    <form>
+                    <form method="post" action="{{ path_for('edit', {'slug': result.slug}) }}">
                         <label for="title"> Title</label>
-                        <input type="text" name="title"><br>
+                        <input type="text" name="title" value='{{ result.title|e }}'><br>
                         <label for="entry">Entry</label>
-                        <textarea rows="5" name="entry"></textarea>
+                        <textarea rows="5" name="entry">{{ result.body }}</textarea>
                         <input type="submit" value="Save Entry" class="button">
-                        <a href="#" class="button button-secondary">Cancel</a>
+                        <a href="{{ path_for('/') }}" class="button button-secondary">Cancel</a>
                     </form>
                 </div>
             </div>

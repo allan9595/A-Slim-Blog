@@ -14,8 +14,34 @@ $app->get('/', function ($request, $response, $args) {
     $posts = $db->getBlog();
     // Render index view
     return $this->renderer->render($response, 'index.twig', ['posts'=>$posts]);
-});
+})->setName('/');
 
+//get the edit page 
+$app->get('/edit/{slug}', function ($request, $response, $args) {
+    // Sample log message
+    $this->logger->info("Slim-Skeleton '/' route");
+    $db = new entriesModel();
+    $result = $db->getBlogBySlug($args['slug']);
+
+    // Render view
+    return $this->renderer->render($response, 'edit.twig',['result' => $result]);
+})->setName('edit');
+
+//post the edit page 
+$app->post('/edit/{slug}', function ($request, $response, $args) {
+    // Sample log message
+    $this->logger->info("Slim-Skeleton '/' route");
+
+    $data = $request->getParsedBody();
+
+    //init the db object
+    $db = new entriesModel();
+    $db->editBlog($data, $args['slug']);
+    
+    //redirect back to index page 
+    return $response->withRedirect('/', 301);
+
+})->setName('edit');
 
 //get the add page 
 $app->get('/new', function ($request, $response, $args) {
@@ -37,8 +63,7 @@ $app->post('/new', function ($request, $response, $args) {
     //init the db object
     $db = new entriesModel();
     $db->addBlog($data);
-    //$db->createSlug();
-
+    
     //redirect back to index page 
     return $response->withRedirect('/', 301);
 
@@ -46,10 +71,14 @@ $app->post('/new', function ($request, $response, $args) {
 
 
 //get the detail page 
-$app->get('/blog/{title}', function ($request, $response, $args) {
+$app->get('/{slug}', function ($request, $response, $args) {
     // Sample log message
     $this->logger->info("Slim-Skeleton '/' route");
 
+    $db = new entriesModel();
+    $result = $db->getBlogBySlug($args['slug']);
+
     // Render index view
-    return $this->renderer->render($response, 'datail.twig', ['title' => $args['title']]);
-})->setName('blog');
+    return $this->renderer->render($response, 'detail.twig', ['result' => $result]);
+});
+
