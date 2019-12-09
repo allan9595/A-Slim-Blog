@@ -3,6 +3,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 use Blog\Model\entriesModel;
+use Blog\Model\commentsModel;
 
 //get the index page 
 $app->get('/', function ($request, $response, $args) {
@@ -76,9 +77,31 @@ $app->get('/{slug}', function ($request, $response, $args) {
     $this->logger->info("Slim-Skeleton '/' route");
 
     $db = new entriesModel();
+    $commentObj = new commentsModel();
     $result = $db->getBlogBySlug($args['slug']);
-
+    $comments = $commentObj->getComments($args['slug']);
     // Render index view
-    return $this->renderer->render($response, 'detail.twig', ['result' => $result]);
+    return $this->renderer->render(
+        $response, 
+        'detail.twig', 
+        [
+            'result' => $result,
+            'comments' => $comments
+        ]
+        );
 });
 
+
+//post the detail page for page commenting
+$app->post('/{slug}', function ($request, $response, $args) {
+    // Sample log message
+    $this->logger->info("Slim-Skeleton '/' route");
+
+    $data = $request->getParsedBody();
+    $commentObj = new commentsModel();
+
+    $commentObj->addComment($data, $args['slug']);
+    
+    //redirect back to index page 
+    return $response->withRedirect($args['slug'], 301);
+})->setName('comment');

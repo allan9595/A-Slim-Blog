@@ -131,7 +131,6 @@ class entriesModel{
     public function deleteBlog(){
 
     }
-    
 }
 
 // $test = new entriesModel();
