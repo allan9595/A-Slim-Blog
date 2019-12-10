@@ -73,6 +73,12 @@ footer a {
 	border-color: #000;
 	color: #000;
 }
+.button.button-delete {
+	float: right;
+	background: transparent;
+	border-color: rgb(255, 0, 0);
+	color: rgb(255, 0, 0);
+}
 .button.button-round {
 	border-radius: 100px;
 	padding: 9px;

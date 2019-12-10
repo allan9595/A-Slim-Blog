@@ -7,7 +7,7 @@
         <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,400italic,700|Noto+Sans:700,400' rel='stylesheet' type='text/css'>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="../css/normalize.css">
-        <link rel="stylesheet" href="../css/site.css" version=51>
+        <link rel="stylesheet" href="../css/site.css">
     </head>
     <body>
         <header>
@@ -20,17 +20,21 @@
         </header>
         <section>
             <div class="container">
-                <div class="edit-entry">
-                    <h2>Edit Entry</h2>
-                    <form method="post" action="{{ path_for('edit', {'slug': result.slug}) }}">
-                        <label for="title"> Title</label>
-                        <input type="text" name="title" value='{{ result.title|e }}'><br>
-                        <label for="entry">Entry</label>
-                        <textarea rows="5" name="entry">{{ result.body }}</textarea>
-                        <input type="submit" value="Save Entry" class="button">
-                        <a href="{{ path_for('/') }}" class="button button-secondary">Cancel</a>
-                        <a href="{{ path_for('delete', {'id': result.id}) }}" class="button button-delete">Delete</a>
-                    </form>
+                <div class="entry-list">
+                    {% for post in posts %}
+                        <article>
+                            <h2><a href="{{ path_for('slug', {'slug': post.slug}) }}"}>{{ post.title|e }}</a></h2>
+                            <time datetime=post.date>{{ post.date|e }} {{'EST'}}</time>
+                            <br>
+                            {% for tag in tags %}
+                                    {% for tagInner in tag %}
+                                        {% if tagInner.id == post.id %}
+                                            <span><a style='text-decoration:none;color:#678f89;' href="{{ path_for('filtered', {'tag': tagInner.tagName}) }}">{{'#'}}{{ tagInner.tagName }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                            {% endfor %}
+                        </article>
+                    {% endfor %}
                 </div>
             </div>
         </section>

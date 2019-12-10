@@ -4,6 +4,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 use Blog\Model\entriesModel;
 use Blog\Model\commentsModel;
+use Blog\Model\tagsModel;
 
 //get the index page 
 $app->get('/', function ($request, $response, $args) {
@@ -12,10 +13,24 @@ $app->get('/', function ($request, $response, $args) {
 
     //init the entries model obj and read the data
     $db = new entriesModel();
+    $dbModel = new tagsModel();
+    $tags = [];
+
     $posts = $db->getBlog();
+    
+    //get the tags under the same entry
+    foreach($posts as $post){
+        $tags[] = $dbModel->fetchTags($post["id"]);
+    }
+    //var_dump($tags);
     // Render index view
-    return $this->renderer->render($response, 'index.twig', ['posts'=>$posts]);
+    return $this->renderer->render($response, 'index.twig', [
+        'posts'=>$posts,
+        'tags' => $tags
+    ]);
+
 })->setName('/');
+
 
 //get the edit page 
 $app->get('/edit/{slug}', function ($request, $response, $args) {
@@ -89,7 +104,7 @@ $app->get('/{slug}', function ($request, $response, $args) {
             'comments' => $comments
         ]
         );
-});
+})->setName('slug');
 
 
 //post the detail page for page commenting
@@ -105,3 +120,41 @@ $app->post('/{slug}', function ($request, $response, $args) {
     //redirect back to index page 
     return $response->withRedirect($args['slug'], 301);
 })->setName('comment');
+
+//get the index page filtered by tags
+$app->get('/filtered/{tag}', function ($request, $response, $args) {
+    // Sample log message
+    $this->logger->info("Slim-Skeleton '/' route");
+
+    //init the entries model obj and read the data
+  
+    $dbModel = new tagsModel();
+
+    $posts = $dbModel->tagsFiltered($args['tag']);
+    //var_dump($posts);
+    //get the tags under the same entry
+    foreach($posts as $post){
+        $tags[] = $dbModel->fetchTags($post["id"]);
+    }
+ 
+    // Render index view
+    return $this->renderer->render($response, 'filtered.twig', [
+        'posts'=>$posts,
+        'tags' => $tags
+    ]);
+
+})->setName('filtered');
+
+//post the delete page 
+$app->get('/delete/{id}', function ($request, $response, $args) {
+    // Sample log message
+    $this->logger->info("Slim-Skeleton '/' route");
+
+    //init the db object
+    $db = new entriesModel();
+    $db->deleteBlog($args['id']);
+    
+    //redirect back to index page 
+    return $response->withRedirect('/', 301);
+
+})->setName('delete');
