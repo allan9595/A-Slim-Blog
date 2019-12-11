@@ -42,7 +42,7 @@ $app->get('/edit/{slug}', function ($request, $response, $args) {
 
     $result = $db->getBlogBySlug($args['slug']);
     $tags[] = $dbModel->fetchTagsBySlug($args['slug']);
-
+    var_dump($args['slug']);
     //loop through the tags
     foreach($tags as $value){
         foreach($value as $value){
