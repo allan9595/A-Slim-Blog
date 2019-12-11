@@ -22,7 +22,7 @@ $app->get('/', function ($request, $response, $args) {
     foreach($posts as $post){
         $tags[] = $dbModel->fetchTags($post["id"]);
     }
-    //var_dump($tags);
+   
     // Render index view
     return $this->renderer->render($response, 'index.twig', [
         'posts'=>$posts,
@@ -37,10 +37,25 @@ $app->get('/edit/{slug}', function ($request, $response, $args) {
     // Sample log message
     $this->logger->info("Slim-Skeleton '/' route");
     $db = new entriesModel();
+    $dbModel = new tagsModel();
+    $tags = [];
+
     $result = $db->getBlogBySlug($args['slug']);
+    $tags[] = $dbModel->fetchTagsBySlug($args['slug']);
+
+    //loop through the tags
+    foreach($tags as $value){
+        foreach($value as $value){
+            $tag[] = $value['tagName'];
+        }
+    }
+    $tagString = implode(",", $tag);
 
     // Render view
-    return $this->renderer->render($response, 'edit.twig',['result' => $result]);
+    return $this->renderer->render($response, 'edit.twig',[
+        'result' => $result,
+        'tagString' => $tagString
+    ]);
 })->setName('edit');
 
 //post the edit page 
@@ -52,6 +67,7 @@ $app->post('/edit/{slug}', function ($request, $response, $args) {
 
     //init the db object
     $db = new entriesModel();
+    
     $db->editBlog($data, $args['slug']);
     
     //redirect back to index page 
@@ -131,7 +147,7 @@ $app->get('/filtered/{tag}', function ($request, $response, $args) {
     $dbModel = new tagsModel();
 
     $posts = $dbModel->tagsFiltered($args['tag']);
-    //var_dump($posts);
+    
     //get the tags under the same entry
     foreach($posts as $post){
         $tags[] = $dbModel->fetchTags($post["id"]);

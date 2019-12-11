@@ -13,12 +13,32 @@ class tagsModel{
             $db = $this->db->db();
             $sql = "
                 SELECT posts.id, tags.tagName FROM posts
-                    LEFT JOIN tags_posts ON posts.id = postId
-                    LEFT JOIN tags on tags.id = tagId
+                    LEFT JOIN tags_posts ON posts.id = tags_posts.postId
+                    LEFT JOIN tags on tags.id = tags_posts.tagId
                     WHERE postId = ?;
             ";
             $pdo = $db->prepare($sql);
             $pdo->bindValue(1, $id, PDO::PARAM_INT);
+            $pdo->execute();
+            $results = $pdo->fetchAll(PDO::FETCH_ASSOC);
+            return $results;
+        }catch(Exception $e){
+            echo $e->getMessage();
+        }
+    }
+
+    public function fetchTagsBySlug($slug){
+        try{
+            $db = $this->db->db();
+            $slug = filter_var($slug, FILTER_SANITIZE_STRING);
+            $sql = "
+                SELECT DISTINCT posts.id, tags.tagName FROM posts
+                LEFT JOIN tags_posts ON posts.slug = postSlug
+                LEFT JOIN tags on tags.slug = postSlug
+                WHERE posts.slug = ?;
+            ";
+            $pdo = $db->prepare($sql);
+            $pdo->bindValue(1, $slug, PDO::PARAM_STR);
             $pdo->execute();
             $results = $pdo->fetchAll(PDO::FETCH_ASSOC);
             return $results;

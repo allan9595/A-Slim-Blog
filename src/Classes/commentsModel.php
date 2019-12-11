@@ -56,13 +56,6 @@ class commentsModel{
     
 }
 
-// $test = new entriesModel();
-// $test->getBlog();
-
-//php query
-// INSERT INTO posts (title, date, body, slug) VALUES ('PHP is awesome', datetime(), 'I love php', NULL);
-// UPDATE posts SET slug = (SELECT lower(replace(title,' ','-')) From posts WHERE id = last_insert_rowid()) || '-' || last_insert_rowid() WHERE id = last_insert_rowid();
-//UPDATE posts SET slug = (SELECT REPLACE((SELECT LOWER((SELECT title FROM posts WHERE id = (SELECT last_insert_rowid())))),' ','-') || '-' || (SELECT last_insert_rowid())) WHERE id = (SELECT last_insert_rowid())
 ?>
 
 

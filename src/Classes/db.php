@@ -1,7 +1,7 @@
 <?php
 namespace Blog\Model;
 
-//echo dirname(__DIR__);
+
 class db{
     public function db(){
         try{
@@ -16,6 +16,4 @@ class db{
     }
 }
 
-// $test = new db();
-// $test->db();
 ?>

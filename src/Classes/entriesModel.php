@@ -118,7 +118,7 @@ class entriesModel{
                         $value = strtolower(trim($value));
                         //build the many to many replationship
                         $sql = "
-                            INSERT INTO tags (tagName) VALUES(?);
+                            INSERT INTO tags (tagName,slug, post_id) VALUES(?, (SELECT slug FROM posts WHERE id = $lastInsertPostId), $lastInsertPostId);
                         ";
                         $pdo = $db->prepare($sql);
                         $pdo->bindValue(1, $value, PDO::PARAM_STR);
@@ -134,12 +134,14 @@ class entriesModel{
                         $tag_id = $tag_array["last_insert_rowid()"];
                     
                         $sql = "
-                            INSERT INTO tags_posts (postId, tagId) VALUES (?, ?);
+                            INSERT INTO tags_posts (postId, tagId, postSlug) VALUES (?, ?, (SELECT slug FROM posts WHERE id = $lastInsertPostId));
                         ";
                         $pdo = $db->prepare($sql);
                         $pdo->bindValue(1, $lastInsertPostId, PDO::PARAM_STR);
                         $pdo->bindValue(2, $tag_id, PDO::PARAM_STR);
                         $pdo->execute();
+
+                        
                     }catch(Exception $e){
                         echo $e->getMessage();
                     }
@@ -150,7 +152,7 @@ class entriesModel{
                     $tag = strtolower(trim($tag));
                     //if just one single tag entered at one time, then insert it directly
                     $sql = "
-                        INSERT INTO tags (tagName) VALUES(?);
+                        INSERT INTO tags (tagName,slug, post_id) VALUES(?, (SELECT slug FROM posts WHERE id = $lastInsertPostId), $lastInsertPostId);
                     ";
                     $pdo = $db->prepare($sql);
                     $pdo->bindValue(1, $tag, PDO::PARAM_STR);
@@ -164,7 +166,7 @@ class entriesModel{
                     $tag_id = $tag_array["last_insert_rowid()"];
                     
                     $sql = "
-                        INSERT INTO tags_posts (postId, tagId) VALUES (?, ?);
+                        INSERT INTO tags_posts (postId, tagId, postSlug) VALUES (?, ?, (SELECT slug FROM posts WHERE id = $lastInsertPostId));
                     ";
                     $pdo = $db->prepare($sql);
                     $pdo->bindValue(1, $lastInsertPostId, PDO::PARAM_STR);
@@ -186,9 +188,19 @@ class entriesModel{
             //filter the post data 
             $title = filter_var($data["title"], FILTER_SANITIZE_STRING);
             $body = filter_var($data["entry"], FILTER_SANITIZE_STRING);
-            $slug = filter_var($slug, FILTER_SANITIZE_STRING);
+            //$slug = filter_var($slug, FILTER_SANITIZE_STRING);
+            $tag = filter_var($data["tag"], FILTER_SANITIZE_STRING);
             $date = date_format(new DateTime('NOW', new DateTimeZone('EST')), 'Y-m-d H:i:s'); // get the current date/time when the blog create
 
+            //fetch the entry id
+
+            $sql = "
+                SELECT postId FROM tags_posts WHERE postSlug = '$slug' LIMIT 1;
+            ";
+            $pdo = $db->prepare($sql);
+            $pdo->execute();
+            $result = $pdo->fetch(PDO::FETCH_ASSOC);
+            var_dump($result);
             //insert new data into the db
             $sql = "
                 UPDATE posts SET title = ?, date = ?, body = ? WHERE slug = ?;
@@ -200,6 +212,157 @@ class entriesModel{
             $pdo->bindValue(3, $body, PDO::PARAM_STR);
             $pdo->bindValue(4, $slug, PDO::PARAM_STR);
             $pdo->execute();
+
+            //update the slug 
+
+            $sql = "
+                UPDATE posts
+                SET slug = (
+                        SELECT [REPLACE]( (
+                                            SELECT LOWER( (
+                                                                SELECT title
+                                                                FROM posts
+                                                                WHERE slug = '$slug'
+                                                            )
+                                                    ) 
+                                        ), ' ', '-') || '-' ||  ( (
+                                                                    SELECT COUNT(title)
+                                                                    FROM posts
+                                                                    WHERE title = (
+                                                                                        SELECT title
+                                                                                        FROM posts
+                                                                                        WHERE slug = '$slug'
+                                                                                    )
+                                                                )
+                                                                ) ) 
+                    
+                WHERE slug = '$slug'
+            ";
+            $pdo = $db->prepare($sql);
+            $pdo->execute();
+
+            //update the relateed tag to posts map
+
+            $sql = "
+                UPDATE tags_posts SET postSlug = ( SELECT slug FROM posts WHERE id = $result[postId] ) WHERE postId = $result[postId];
+            ";
+            $pdo = $db->prepare($sql);
+            $pdo->execute();
+
+            $sql = "
+                UPDATE tags SET slug = ( SELECT slug FROM posts WHERE id = $result[postId] ) WHERE post_id = $result[postId];
+            ";
+            $pdo = $db->prepare($sql);
+            $pdo->execute();
+
+
+            //update tags
+            if(isset($tag)){
+                //if mutiple tags entered, explode them by ',' then add them to db
+                if(strpos($tag, ',') == true){
+
+                    //delete the tags name from tag table
+                    $sql = "
+                        DELETE FROM tags WHERE post_id = ?
+                    ";
+                    $pdo = $db->prepare($sql);
+                    $pdo->bindValue(1, $result['postId'], PDO::PARAM_INT);
+                    $pdo->execute();
+
+                    //delete the assocuate id number form third many-to-many table
+                    $sql = "
+                        DELETE FROM tags_posts WHERE postId = ?;
+                    ";
+                    $pdo = $db->prepare($sql);
+                    $pdo->bindValue(1, $result['postId'], PDO::PARAM_INT);
+                    $pdo->execute();
+
+                    //split the tag with comma ',', then loop through the tag array to add those tags into db
+                    $tag = explode(',', $tag);
+                    foreach ($tag as $value) {
+                        $value = trim($value);
+                        $sql = "
+                            INSERT INTO tags (tagName, slug, post_id) VALUES(?, (SELECT slug FROM posts WHERE id = ?), ?);
+                        ";
+                        $pdo = $db->prepare($sql);
+                        $pdo->bindValue(1, $value, PDO::PARAM_STR);
+                        $pdo->bindValue(2, $result['postId'], PDO::PARAM_INT);
+                        $pdo->bindValue(3, $result['postId'], PDO::PARAM_INT);
+                        $pdo->execute();
+        
+                        $sql = "
+                            SELECT last_insert_rowid()
+                        ";
+                        $pdo = $db->prepare($sql);
+                        $pdo->execute();
+        
+                        $tag_array =$pdo->fetch(PDO::FETCH_ASSOC);
+                        $tag_id = $tag_array["last_insert_rowid()"];
+                        
+                        $sql = "
+                            INSERT INTO tags_posts (postId, tagId, postSlug) VALUES (?, ?, (SELECT slug FROM posts WHERE id = $result[postId]));
+                        ";
+                        $pdo = $db->prepare($sql);
+                        $pdo->bindValue(1, $result['postId'], PDO::PARAM_STR);
+                        $pdo->bindValue(2, $tag_id, PDO::PARAM_STR);
+                        $pdo->execute();
+                    }
+                }
+                //else{
+                //     //delete the tags name from tag table
+                //     $sql = "
+                //         DELETE FROM tags WHERE tags.id IN (select tag_id from entries_tags where entry_id = ?);
+                //     ";
+                //     $pdo = $db->prepare($sql);
+                //     $pdo->bindValue(1, $id, PDO::PARAM_INT);
+                //     $pdo->execute();
+                //     //delete the assocuate id number form third many-to-many table
+                //     $sql = "
+                //         DELETE FROM entries_tags WHERE entry_id = ?;
+                //     ";
+                //     $pdo = $db->prepare($sql);
+                //     $pdo->bindValue(1, $id, PDO::PARAM_INT);
+                //     $pdo->execute();
+        
+                //     //re-insert the edited tag
+                //     $sql = "
+                //         INSERT INTO `tags` (`tag_name`) VALUES(?);
+                //     ";
+                //     $pdo = $db->prepare($sql);
+                //     $pdo->bindValue(1, $tag, PDO::PARAM_STR);
+                //     $pdo->execute();
+                //     $sql = "SELECT last_insert_rowid()";
+                //     $pdo = $db->prepare($sql);
+                //     $pdo->execute();
+                //     $tag_array =$pdo->fetch(PDO::FETCH_ASSOC);
+                //     $tag_id = $tag_array["last_insert_rowid()"];
+                    
+                //     $sql = "
+                //         INSERT INTO entries_tags (entry_id, tag_id) VALUES (?, ?);
+                //     ";
+                //     $pdo = $db->prepare($sql);
+                //     $pdo->bindValue(1, $id, PDO::PARAM_INT);
+                //     $pdo->bindValue(2, $tag_id, PDO::PARAM_INT);
+                //     $pdo->execute();
+                // }    
+            }
+            // //if no tag inputed, just delete all the records
+            // if(empty($tag)){
+            //     //delete the tags name from tag table
+            //     $sql = "
+            //         DELETE FROM tags WHERE tags.id IN (select tag_id from entries_tags where entry_id = ?);
+            //     ";
+            //     $pdo = $db->prepare($sql);
+            //     $pdo->bindValue(1, $id, PDO::PARAM_INT);
+            //     $pdo->execute();
+            //     //delete the assocuate id number form third many-to-many table
+            //     $sql = "
+            //         DELETE FROM entries_tags WHERE entry_id = ?;
+            //     ";
+            //     $pdo = $db->prepare($sql);
+            //     $pdo->bindValue(1, $id, PDO::PARAM_INT);
+            //     $pdo->execute();
+            // }
         }catch(Exception $e){
             echo $e->getMessage();
         }
