@@ -42,7 +42,7 @@ $app->get('/edit/{slug}', function ($request, $response, $args) {
 
     $result = $db->getBlogBySlug($args['slug']);
     $tags[] = $dbModel->fetchTagsBySlug($args['slug']);
-    var_dump($args['slug']);
+    
     //loop through the tags
     foreach($tags as $value){
         foreach($value as $value){
@@ -51,11 +51,23 @@ $app->get('/edit/{slug}', function ($request, $response, $args) {
     }
     $tagString = implode(",", $tag);
 
-    // Render view
-    return $this->renderer->render($response, 'edit.twig',[
-        'result' => $result,
-        'tagString' => $tagString
-    ]);
+    if(isset($_SESSION['error'])){
+        // Render index view
+        return $this->renderer->render($response, 'edit.twig', 
+            [
+                'error'=>$_SESSION['error'],
+                'input'=>$_SESSION['input'],
+                'result' => $result,
+                'tagString' => $tagString
+            ]
+        );
+    }else{
+       // Render view
+        return $this->renderer->render($response, 'edit.twig',[
+            'result' => $result,
+            'tagString' => $tagString
+        ]);
+    }
 })->setName('edit');
 
 //post the edit page 
@@ -70,6 +82,13 @@ $app->post('/edit/{slug}', function ($request, $response, $args) {
     
     $db->editBlog($data, $args['slug']);
     
+    if(isset($_SESSION['error'])){
+        return $response->withRedirect($this->router->pathFor('edit', ['slug' => $args['slug']], []));
+    }else{
+        //redirect back to index page 
+        return $response->withRedirect('/', 301);
+    }
+
     //redirect back to index page 
     return $response->withRedirect('/', 301);
 
@@ -79,9 +98,23 @@ $app->post('/edit/{slug}', function ($request, $response, $args) {
 $app->get('/new', function ($request, $response, $args) {
     // Sample log message
     $this->logger->info("Slim-Skeleton '/' route");
-
-    // Render index view
-    return $this->renderer->render($response, 'new.twig', $args);
+    //var_dump($_SESSION['error']);
+    if(isset($_SESSION['error'])){
+        // Render index view
+        return $this->renderer->render($response, 'new.twig', 
+            [
+                'error'=>$_SESSION['error'],
+                'input'=>$_SESSION['input']
+            ]
+        );
+    }else{
+        return $this->renderer->render(
+            $response, 
+            'new.twig', 
+            $args
+        );
+    }
+    
 })->setName('new');
 
 
@@ -95,10 +128,13 @@ $app->post('/new', function ($request, $response, $args) {
     //init the db object
     $db = new entriesModel();
     $db->addBlog($data);
-    
-    //redirect back to index page 
-    return $response->withRedirect('/', 301);
 
+    if(isset($_SESSION['error'])){
+        return $response->withRedirect('/new');
+    }else{
+        //redirect back to index page 
+        return $response->withRedirect('/', 301);
+    }
 })->setName('new');
 
 
@@ -111,15 +147,31 @@ $app->get('/{slug}', function ($request, $response, $args) {
     $commentObj = new commentsModel();
     $result = $db->getBlogBySlug($args['slug']);
     $comments = $commentObj->getComments($args['slug']);
-    // Render index view
-    return $this->renderer->render(
-        $response, 
-        'detail.twig', 
-        [
-            'result' => $result,
-            'comments' => $comments
-        ]
-        );
+
+    if(isset($_SESSION['error'])){
+        // Render detail view
+        return $this->renderer->render(
+            $response, 
+            'detail.twig', 
+            [
+                'error'=>$_SESSION['error'],
+                'input'=>$_SESSION['input'],
+                'result' => $result,
+                'comments' => $comments
+            ]
+            );
+    }else{
+        // Render index view
+        return $this->renderer->render(
+            $response, 
+            'detail.twig', 
+            [
+                'result' => $result,
+                'comments' => $comments
+            ]
+            );
+    }
+    
 })->setName('slug');
 
 
@@ -133,7 +185,7 @@ $app->post('/{slug}', function ($request, $response, $args) {
 
     $commentObj->addComment($data, $args['slug']);
     
-    //redirect back to index page 
+    //redirect back to detail page 
     return $response->withRedirect($args['slug'], 301);
 })->setName('comment');
 

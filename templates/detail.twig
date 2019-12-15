@@ -46,6 +46,7 @@
                             </article>
                         {% endfor %}
                     </div>
+                    <p class="error">{{  error.comment }}</p>
                     <div class="new-comment">
                         <form method="post" action="{{ path_for('comment',{'slug': result.slug}) }}">
                               <label for="name"> Name</label>

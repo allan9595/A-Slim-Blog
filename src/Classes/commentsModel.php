@@ -25,14 +25,29 @@ class commentsModel{
             $slug = filter_var($slug, FILTER_SANITIZE_STRING);
             $comment = filter_var($data['comment'], FILTER_SANITIZE_STRING);
             $date = date_format(new DateTime('NOW', new DateTimeZone('EST')), 'Y-m-d H:i:s'); // get the current date/time when the comment create
-            $sql = "
-                INSERT INTO comments (name, body, postId, date) VALUES (?, ?, (SELECT id FROM posts WHERE slug = '$slug'), ?)
-            ";
-            $pdo = $db->prepare($sql);
-            $pdo->bindValue(1, $name, \PDO::PARAM_STR);
-            $pdo->bindValue(2, $comment, \PDO::PARAM_STR);
-            $pdo->bindValue(3, $date, \PDO::PARAM_STR);
-            $pdo->execute();
+
+            if(
+                $comment == "" 
+            ){ 
+                $errors = ['comment' => $comment];
+                foreach($errors as $key => $value){
+                    if($value == ""){
+                        $_SESSION['error'][$key] = "$key is required!";
+                    }
+                }
+                //the following section is to keep the input value filled
+                $_SESSION['input']['comment'] = $comment;
+            }else{
+                session_unset();
+                $sql = "
+                    INSERT INTO comments (name, body, postId, date) VALUES (?, ?, (SELECT id FROM posts WHERE slug = '$slug'), ?)
+                ";
+                $pdo = $db->prepare($sql);
+                $pdo->bindValue(1, $name, \PDO::PARAM_STR);
+                $pdo->bindValue(2, $comment, \PDO::PARAM_STR);
+                $pdo->bindValue(3, $date, \PDO::PARAM_STR);
+                $pdo->execute();
+            }
         }catch(Exception $e){
             echo $e->getMessage();
         }
