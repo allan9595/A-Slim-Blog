@@ -43,14 +43,19 @@ $app->get('/edit/{slug}', function ($request, $response, $args) {
     $result = $db->getBlogBySlug($args['slug']);
     $tags[] = $dbModel->fetchTagsBySlug($args['slug']);
     
-    //loop through the tags
-    foreach($tags as $value){
-        foreach($value as $value){
-            $tag[] = $value['tagName'];
-        }
-    }
-    $tagString = implode(",", $tag);
+    $name = $request->getAttribute('csrf_name');
+    $csrf_value = $request->getAttribute('csrf_value');
 
+    if(!empty($tags)){
+        //loop through the tags
+        foreach($tags as $value){
+            foreach($value as $value){
+                $tag[] = $value['tagName'];
+            }
+        }
+        $tagString = implode(",", $tag);
+    }
+    
     if(isset($_SESSION['error'])){
         // Render index view
         return $this->renderer->render($response, 'edit.twig', 
@@ -58,14 +63,18 @@ $app->get('/edit/{slug}', function ($request, $response, $args) {
                 'error'=>$_SESSION['error'],
                 'input'=>$_SESSION['input'],
                 'result' => $result,
-                'tagString' => $tagString
+                'tagString' => $tagString,
+                'name' => $name,
+                'value' => $csrf_value
             ]
         );
     }else{
        // Render view
         return $this->renderer->render($response, 'edit.twig',[
             'result' => $result,
-            'tagString' => $tagString
+            'tagString' => $tagString,
+            'name' => $name,
+            'value' => $csrf_value
         ]);
     }
 })->setName('edit');
@@ -98,20 +107,26 @@ $app->post('/edit/{slug}', function ($request, $response, $args) {
 $app->get('/new', function ($request, $response, $args) {
     // Sample log message
     $this->logger->info("Slim-Skeleton '/' route");
-    //var_dump($_SESSION['error']);
+
+    $name = $request->getAttribute('csrf_name');
+    $value = $request->getAttribute('csrf_value');
+
     if(isset($_SESSION['error'])){
         // Render index view
         return $this->renderer->render($response, 'new.twig', 
             [
                 'error'=>$_SESSION['error'],
-                'input'=>$_SESSION['input']
+                'input'=>$_SESSION['input'],
+                'name' => $name,
+                'value' => $value
             ]
         );
     }else{
         return $this->renderer->render(
             $response, 
             'new.twig', 
-            $args
+            ['name' => $name,
+            'value' => $value]
         );
     }
     
@@ -148,6 +163,9 @@ $app->get('/{slug}', function ($request, $response, $args) {
     $result = $db->getBlogBySlug($args['slug']);
     $comments = $commentObj->getComments($args['slug']);
 
+    $name = $request->getAttribute('csrf_name');
+    $csrf_value = $request->getAttribute('csrf_value');
+
     if(isset($_SESSION['error'])){
         // Render detail view
         return $this->renderer->render(
@@ -157,7 +175,9 @@ $app->get('/{slug}', function ($request, $response, $args) {
                 'error'=>$_SESSION['error'],
                 'input'=>$_SESSION['input'],
                 'result' => $result,
-                'comments' => $comments
+                'comments' => $comments,
+                'name' => $name,
+                'value' => $csrf_value
             ]
             );
     }else{
@@ -167,7 +187,9 @@ $app->get('/{slug}', function ($request, $response, $args) {
             'detail.twig', 
             [
                 'result' => $result,
-                'comments' => $comments
+                'comments' => $comments,
+                'name' => $name,
+                'value' => $csrf_value
             ]
             );
     }

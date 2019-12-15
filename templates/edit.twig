@@ -7,7 +7,7 @@
         <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,400italic,700|Noto+Sans:700,400' rel='stylesheet' type='text/css'>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="../css/normalize.css">
-        <link rel="stylesheet" href="../css/site.css" version=51>
+        <link rel="stylesheet" href="../css/site.css?version=51">
     </head>
     <body>
         <header>
@@ -25,11 +25,17 @@
                     <p class="error">{{  error.title }}</p>
                     <p class="error">{{  error.body  }}</p>
                     <form method="post" action="{{ path_for('edit', {'slug': result.slug}) }}">
-                        <label for="title"> Title</label>
+                        <input type="hidden" name="csrf_name" value="{{ name }}">
+                        <input type="hidden" name="csrf_value" value="{{ value }}">
+                        <label for="title"> Title (Required)</label>
                         <input type="text" name="title" value='{{ result.title|e }}'><br>
                         <label for="name"> Tag</label>
-                        <input type="text" name="tag" value='{{ tagString }}'><br>
-                        <label for="entry">Entry</label>
+                        {% if tagString %}
+                            <input type="text" name="tag" value='{{ tagString }}'><br>
+                        {% else %}
+                            <input type="text" name="tag"><br>
+                        {% endif %}
+                        <label for="entry">Entry (Required)</label>
                         <textarea rows="5" name="entry">{{ result.body }}</textarea>
                         <input type="submit" value="Save Entry" class="button">
                         <a href="{{ path_for('/') }}" class="button button-secondary">Cancel</a>

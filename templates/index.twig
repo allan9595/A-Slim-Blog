@@ -7,7 +7,7 @@
         <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,400italic,700|Noto+Sans:700,400' rel='stylesheet' type='text/css'>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/site.css">
+        <link rel="stylesheet" href="css/site.css?version=51">
     </head>
     <body>
         <header>
@@ -26,13 +26,15 @@
                             <h2><a href={{ post.slug }}>{{ post.title|e }}</a></h2>
                             <time datetime=post.date>{{ post.date|e }} {{'EST'}}</time>
                             <br>
-                            {% for tag in tags %}
-                                    {% for tagInner in tag %}
-                                        {% if tagInner.id == post.id %}
-                                            <span><a style='text-decoration:none;color:#678f89;' href="{{ path_for('filtered', {'tag': tagInner.tagName}) }}">{{'#'}}{{ tagInner.tagName }}</span>
-                                        {% endif %}
-                                    {% endfor %}
-                            {% endfor %}
+                            {% if tags %}
+                                {% for tag in tags %}
+                                        {% for tagInner in tag %}
+                                            {% if tagInner.id == post.id %}
+                                                <span><a style='text-decoration:none;color:#678f89;' href="{{ path_for('filtered', {'tag': tagInner.tagName}) }}">{{'#'}}{{ tagInner.tagName }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                {% endfor %}
+                            {% endif %}
                         </article>
                     {% endfor %}
                 </div>

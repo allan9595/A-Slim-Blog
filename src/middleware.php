@@ -1,4 +1,5 @@
 <?php
 // Application middleware
 
-// e.g: $app->add(new \Slim\Csrf\Guard);
+// Register Middleware To Be Executed On All Routes
+

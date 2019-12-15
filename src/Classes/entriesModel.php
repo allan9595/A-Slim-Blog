@@ -49,7 +49,6 @@ class entriesModel{
     //create the add blog entry
     public function addBlog($data){
 
-      
         try{
             $db = $this->db->db();
             //filter the post data 
@@ -118,40 +117,72 @@ class entriesModel{
                 $pdo = $db->prepare($sql);
                 $pdo->execute();
 
+                if(!empty($tag)){
+                    //handle tags insertion and build many to many relationship
+                    $sql = "
+                        SELECT last_insert_rowid()
+                    "; 
 
-                //handle tags insertion and build many to many relationship
-                $sql = "
-                    SELECT last_insert_rowid()
-                "; 
+                    $pdo = $db->prepare($sql);
+                    $pdo->execute();
+                    $lastInsertPostIdArray = $pdo->fetch(PDO::FETCH_ASSOC);
+                    $lastInsertPostId = $lastInsertPostIdArray["last_insert_rowid()"];
 
-                $pdo = $db->prepare($sql);
-                $pdo->execute();
-                $lastInsertPostIdArray = $pdo->fetch(PDO::FETCH_ASSOC);
-                $lastInsertPostId = $lastInsertPostIdArray["last_insert_rowid()"];
+                    //if mutiple tags entered, explode them by ',' then add them to db
+                    if(strpos($tag, ',') == true){
+                        $tag = explode(',', $tag);
+                        foreach ($tag as $value) {
+                            try{
+                                $value = strtolower(trim($value));
+                                //build the many to many replationship
+                                $sql = "
+                                    INSERT INTO tags (tagName,slug, post_id) VALUES(?, (SELECT slug FROM posts WHERE id = $lastInsertPostId), $lastInsertPostId);
+                                ";
+                                $pdo = $db->prepare($sql);
+                                $pdo->bindValue(1, $value, PDO::PARAM_STR);
+                                $pdo->execute();
 
-                //if mutiple tags entered, explode them by ',' then add them to db
-                if(strpos($tag, ',') == true){
-                    $tag = explode(',', $tag);
-                    foreach ($tag as $value) {
+                                $sql = "
+                                    SELECT last_insert_rowid()
+                                ";
+                                $pdo = $db->prepare($sql);
+                                $pdo->execute();
+
+                                $tag_array = $pdo->fetch(PDO::FETCH_ASSOC);
+                                $tag_id = $tag_array["last_insert_rowid()"];
+                            
+                                $sql = "
+                                    INSERT INTO tags_posts (postId, tagId, postSlug) VALUES (?, ?, (SELECT slug FROM posts WHERE id = $lastInsertPostId));
+                                ";
+                                $pdo = $db->prepare($sql);
+                                $pdo->bindValue(1, $lastInsertPostId, PDO::PARAM_STR);
+                                $pdo->bindValue(2, $tag_id, PDO::PARAM_STR);
+                                $pdo->execute();
+
+                                
+                            }catch(Exception $e){
+                                echo $e->getMessage();
+                            }
+                
+                        }
+                    }else{
                         try{
-                            $value = strtolower(trim($value));
-                            //build the many to many replationship
+                            $tag = strtolower(trim($tag));
+                            //if just one single tag entered at one time, then insert it directly
                             $sql = "
                                 INSERT INTO tags (tagName,slug, post_id) VALUES(?, (SELECT slug FROM posts WHERE id = $lastInsertPostId), $lastInsertPostId);
                             ";
                             $pdo = $db->prepare($sql);
-                            $pdo->bindValue(1, $value, PDO::PARAM_STR);
+                            $pdo->bindValue(1, $tag, PDO::PARAM_STR);
                             $pdo->execute();
-
                             $sql = "
                                 SELECT last_insert_rowid()
                             ";
                             $pdo = $db->prepare($sql);
                             $pdo->execute();
-
-                            $tag_array = $pdo->fetch(PDO::FETCH_ASSOC);
+                            $tag_array =$pdo->fetch(PDO::FETCH_ASSOC);
                             $tag_id = $tag_array["last_insert_rowid()"];
-                        
+                            
                             $sql = "
                                 INSERT INTO tags_posts (postId, tagId, postSlug) VALUES (?, ?, (SELECT slug FROM posts WHERE id = $lastInsertPostId));
                             ";
@@ -159,42 +190,11 @@ class entriesModel{
                             $pdo->bindValue(1, $lastInsertPostId, PDO::PARAM_STR);
                             $pdo->bindValue(2, $tag_id, PDO::PARAM_STR);
                             $pdo->execute();
-
-                            
                         }catch(Exception $e){
                             echo $e->getMessage();
                         }
-            
-                    }
-                }else{
-                    try{
-                        $tag = strtolower(trim($tag));
-                        //if just one single tag entered at one time, then insert it directly
-                        $sql = "
-                            INSERT INTO tags (tagName,slug, post_id) VALUES(?, (SELECT slug FROM posts WHERE id = $lastInsertPostId), $lastInsertPostId);
-                        ";
-                        $pdo = $db->prepare($sql);
-                        $pdo->bindValue(1, $tag, PDO::PARAM_STR);
-                        $pdo->execute();
-                        $sql = "
-                            SELECT last_insert_rowid()
-                        ";
-                        $pdo = $db->prepare($sql);
-                        $pdo->execute();
-                        $tag_array =$pdo->fetch(PDO::FETCH_ASSOC);
-                        $tag_id = $tag_array["last_insert_rowid()"];
-                        
-                        $sql = "
-                            INSERT INTO tags_posts (postId, tagId, postSlug) VALUES (?, ?, (SELECT slug FROM posts WHERE id = $lastInsertPostId));
-                        ";
-                        $pdo = $db->prepare($sql);
-                        $pdo->bindValue(1, $lastInsertPostId, PDO::PARAM_STR);
-                        $pdo->bindValue(2, $tag_id, PDO::PARAM_STR);
-                        $pdo->execute();
-                    }catch(Exception $e){
-                        echo $e->getMessage();
-                    }
-                }   
+                    }   
+                }
             } 
         }catch(Exception $e){
             echo $e->getMessage();

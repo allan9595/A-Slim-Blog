@@ -7,7 +7,7 @@
         <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,400italic,700|Noto+Sans:700,400' rel='stylesheet' type='text/css'>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/site.css">
+        <link rel="stylesheet" href="css/site.css?version=51">
     </head>
     <body>
         <header>
@@ -49,9 +49,11 @@
                     <p class="error">{{  error.comment }}</p>
                     <div class="new-comment">
                         <form method="post" action="{{ path_for('comment',{'slug': result.slug}) }}">
+                            <input type="hidden" name="csrf_name" value="{{ name }}">
+                            <input type="hidden" name="csrf_value" value="{{ value }}">
                               <label for="name"> Name</label>
                               <input type="text" name="name"><br>
-                              <label for="comment">Comment</label>
+                              <label for="comment">Comment (Required)</label>
                               <textarea rows="5" name="comment"></textarea>
                               <input type="submit" value="Post Comment" class="button">
                         </form>
