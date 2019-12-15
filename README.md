@@ -3,7 +3,7 @@
 
 **A-Slim-Blog** 
 
-The Slim blog build with PHP Slim framework 3. It utilized around the CRUD operation. This app allows the user post a entry with the optional tags. Also, it allows the users to post comments on one entry. The Slim blog is the part of my learning journey with the teamtreehouse.com. It demonstrated my ability to use a framework to build out a fully functional CRUD app (one-one, one-to-many, many-to-many). 
+The Slim blog build with PHP Slim framework 3. It utilized around the CRUD operation. This app allows the user to post an entry with the optional tags. Also, it allows the users to post comments on one entry. The Slim blog is the part of my learning journey with the teamtreehouse.com. It demonstrated my ability to use a framework to build out a fully functional CRUD app (one-one, one-to-many, many-to-many). 
 
 Note: 
 
