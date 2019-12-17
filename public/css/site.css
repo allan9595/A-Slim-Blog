@@ -8,12 +8,12 @@ body {
 	font-size: 15px;
 	color: #000;
 	font-family: 'Noto Serif', Georgia, serif;
-	background: #444;
+	background: #256e64;
 }
 .container {
 	margin: 0 auto;
 	padding: 0 25px;
-	background: #FFF;
+	background: #74eddd;
 }
 header .site-header {
 	border-bottom: 1px solid #d1d1d1;
@@ -37,14 +37,14 @@ header .new-entry {
 	margin: 25px 0 0 0;
 }
 footer {
-	background: #444;
+	background: #256e64;
 	height: 30px;
 	text-align: center;
 	padding: 35px 0;
 	color: #999;
 }
 footer a {
-	color: #999;
+	color: #fff;
 	text-decoration: none;
 	border-bottom: 2px solid #666;
 	padding-bottom: 1px;
@@ -161,7 +161,7 @@ a.link {
 	color: #000;
 }
 .entry-list time {
-	color: #888;
+	color: #000;
 }
 .entry-list.single {
 	padding-bottom: 30px;
@@ -179,7 +179,7 @@ a.link {
 	margin-bottom: 40px;
 }
 .entry-comments {
-	background: #f1f1f1;
+	background: #11ab8c;
 	padding: 70px 0;
 }
 .entry-comments .container {
@@ -203,7 +203,7 @@ a.link {
 }
 .comment time {
 	display: block;
-	color: #888;
+	color: #000;
 	font-size: 14px;
 	margin: 3px 0 20px 0;
 }
@@ -276,6 +276,18 @@ input[type=submit] {
 p.error{
 	color: rgb(255, 0, 0)
 }
+
+.entry-list article a.tag{
+	text-decoration:none;
+	color:#f5720f;
+}
+
+
+.entry-list article a.tag:hover{
+	text-decoration:none;
+	color:#000;
+}
+
 
 
 

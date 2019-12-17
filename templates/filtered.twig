@@ -29,7 +29,7 @@
                             {% for tag in tags %}
                                     {% for tagInner in tag %}
                                         {% if tagInner.id == post.id %}
-                                            <span><a style='text-decoration:none;color:#678f89;' href="{{ path_for('filtered', {'tag': tagInner.tagName}) }}">{{'#'}}{{ tagInner.tagName }}</span>
+                                            <span><a class="tag" href="{{ path_for('filtered', {'tag': tagInner.tagName}) }}">{{'#'}}{{ tagInner.tagName }}</span>
                                         {% endif %}
                                     {% endfor %}
                             {% endfor %}
